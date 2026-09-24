@@ -1,0 +1,42 @@
+{
+  "name": "floating-sticky-todos",
+  "version": "2.3.0",
+  "description": "A multi-view desktop sticky-note workspace with boards, calendar, search and backup.",
+  "main": "src/main.js",
+  "author": "Codex",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "^38.1.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.codex.floatingstickytodos",
+    "productName": "桌面便签待办",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "桌面便签待办"
+    }
+  },
+  "allowScripts": {}
+}

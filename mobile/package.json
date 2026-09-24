@@ -1,0 +1,17 @@
+{
+  "name": "sticky-todos-mobile",
+  "version": "1.1.2",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync android",
+    "apk": "cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/local-notifications": "^7.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.4"
+  }
+}

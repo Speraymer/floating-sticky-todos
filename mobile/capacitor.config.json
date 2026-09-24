@@ -1,0 +1,10 @@
+{
+  "appId": "com.speraymer.stickytodos",
+  "appName": "便签待办",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "allowMixedContent": false },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}

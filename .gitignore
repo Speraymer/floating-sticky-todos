@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Generated desktop and mobile builds
+dist/
+outputs/
+output/
+work/
+tmp/
+**/build/
+**/.gradle/
+
+# Local tool state and deployment caches
+.wrangler/
+**/.wrangler/
+.firebase/
+*.log
+
+# Machine-local and live service configuration
+src/firebase-config.json
+**/google-services.json
+**/GoogleService-Info.plist
+**/local.properties
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

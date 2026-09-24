@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; style-src 'self'; script-src 'self'; connect-src https://speraymer-note-sync-relay.pages.dev">
+  <title>便签待办</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+  <main class="note-shell">
+    <button id="edgeTab" class="edge-tab" title="展开便签" aria-label="展开便签"><span>便签</span></button>
+    <div class="resize-handle resize-top" data-resize="top"></div>
+    <div class="resize-handle resize-right" data-resize="right"></div>
+    <div class="resize-handle resize-bottom" data-resize="bottom"></div>
+    <div class="resize-handle resize-left" data-resize="left"></div>
+    <div class="resize-handle resize-top-left" data-resize="top-left"></div>
+    <div class="resize-handle resize-top-right" data-resize="top-right"></div>
+    <div class="resize-handle resize-bottom-left" data-resize="bottom-left"></div>
+    <div class="resize-handle resize-bottom-right" data-resize="bottom-right"></div>
+    <header class="titlebar">
+      <div class="brand"><span class="brand-dot"></span><span id="windowTitle">桌面便签 2</span></div>
+      <div class="window-actions">
+        <button id="searchBtn" class="icon-btn" title="搜索与归档" aria-label="搜索与归档">⌕</button>
+        <button id="settingsBtn" class="icon-btn" title="设置" aria-label="设置">⚙</button>
+        <button id="minimizeBtn" class="icon-btn" title="最小化" aria-label="最小化">−</button>
+        <button id="closeBtn" class="icon-btn close" title="关闭" aria-label="关闭">×</button>
+      </div>
+    </header>
+
+    <nav class="view-tabs" aria-label="视图切换">
+      <button data-view="space">桌面</button><button data-view="list" class="active">清单</button><button data-view="board">看板</button><button data-view="calendar">日历</button>
+    </nav>
+
+    <section class="composer list-only">
+      <input id="todoText" type="text" maxlength="120" placeholder="写下一件要做的事…" autocomplete="off">
+      <div class="todo-options">
+        <label><span>优先级</span><select id="todoPriority"><option value="normal">普通</option><option value="high">高</option><option value="low">低</option></select></label>
+        <label><span>重复</span><select id="todoRepeat"><option value="none">不重复</option><option value="daily">每天</option><option value="weekly">每周</option><option value="monthly">每月</option></select></label>
+      </div>
+      <div class="composer-row">
+        <label class="time-label"><span>截止日期</span><input id="todoTime" type="date"></label>
+        <label class="no-due-option"><input id="noDueToggle" type="checkbox">无日期</label>
+        <button id="cancelEditBtn" class="cancel-edit-btn" hidden>取消</button>
+        <button id="addBtn" class="add-btn">添加</button>
+      </div>
+    </section>
+
+    <section class="summary list-only">
+      <span id="summaryText">今天也要轻松完成 ✨</span>
+      <div><button id="autoSortBtn" class="text-btn" hidden>恢复日期排序</button><button id="clearDoneBtn" class="text-btn">清除已完成</button></div>
+    </section>
+
+    <ul id="todoList" class="todo-list list-only" aria-live="polite"></ul>
+    <div id="emptyState" class="empty-state list-only">
+      <div class="empty-icon">✓</div>
+      <p>暂时没有待办</p>
+      <small>从上方添加你的第一件事吧</small>
+    </div>
+
+    <section id="spaceView" class="mode-view space-view" hidden><div id="spaceCanvas" class="space-canvas"></div></section>
+    <section id="boardView" class="mode-view board-view" hidden><div id="boardColumns" class="board-columns"></div></section>
+    <section id="calendarView" class="mode-view calendar-view" hidden>
+      <div class="calendar-toolbar"><button id="calendarPrev">‹</button><strong id="calendarTitle"></strong><button id="calendarToday">今天</button><button id="calendarNext">›</button><select id="calendarMode"><option value="month">月</option><option value="week">周</option></select></div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+    </section>
+
+    <button id="noteStackBtn" class="note-stack-btn" title="展开便签组"><span id="activeNoteName">我的便签</span></button>
+    <section id="noteDrawer" class="note-drawer" aria-hidden="true">
+      <button id="noteDrawerHandle" class="note-drawer-handle" type="button" aria-label="上下拖动调整便签组高度"><span></span></button>
+      <div class="note-drawer-head"><strong>便签组</strong><div><button id="toggleNoteDrawerSize" class="small-action">全屏</button><button id="addNoteBtn" class="small-action">＋ 新建</button></div></div>
+      <div id="noteCards" class="note-cards"></div>
+      <button id="closeNoteDrawer" class="drawer-close">收起便签组</button>
+    </section>
+
+    <aside id="settingsPanel" class="settings-panel" aria-hidden="true">
+      <div class="settings-head"><strong>便签设置</strong><button id="settingsClose" class="icon-btn">×</button></div>
+      <label class="setting-line"><span>开机自动启动</span><input id="autostartToggle" type="checkbox" class="toggle"></label>
+      <label class="setting-line"><span>始终置顶</span><input id="alwaysOnTopToggle" type="checkbox" class="toggle"></label>
+      <label class="setting-line"><span>背景纹理</span><select id="textureSelect"><option value="plain">纯色</option><option value="paper">纸张</option><option value="dots">圆点</option><option value="grid">方格</option></select></label>
+      <label class="setting-line shortcut-line"><span>快速记录快捷键</span><input id="shortcutInput" value="Ctrl+Shift+Space" readonly title="点击后直接按下新的组合键"></label>
+      <section class="sync-section">
+        <div class="sync-heading"><strong>账号与多端同步</strong><span id="syncStatus">未登录</span></div>
+        <div id="syncLogin" class="sync-login">
+          <div class="auth-tabs"><button id="authLoginTab" class="small-action active">登录</button><button id="authRegisterTab" class="small-action">注册</button></div>
+          <input id="syncDisplayName" maxlength="40" placeholder="昵称" hidden>
+          <input id="syncEmail" type="email" placeholder="邮箱">
+          <input id="syncPassword" type="password" minlength="8" maxlength="128" placeholder="密码（至少 8 位）">
+          <label id="syncPrivacy" class="sync-privacy" hidden><input type="checkbox">我已阅读并同意隐私政策与数据同步说明</label>
+          <button id="syncSubmitBtn" class="small-action primary">登录并同步</button>
+          <div class="auth-links"><button id="syncForgotBtn" class="text-btn">忘记密码？</button><button id="syncResendBtn" class="text-btn">重新发送验证邮件</button></div>
+        </div>
+        <div id="syncActions" class="sync-actions" hidden><button id="syncNowBtn" class="small-action">立即同步</button><button id="syncLogoutBtn" class="small-action">退出账号</button></div>
+        <small id="syncMessage">新账号需要先打开验证邮件；验证后才能登录和同步。</small>
+      </section>
+      <div class="data-actions"><button id="exportBtn" class="small-action">导出数据</button><button id="importBtn" class="small-action">导入数据</button><button id="backupBtn" class="small-action">立即备份</button></div>
+      <div class="color-section">
+        <span>推荐颜色</span>
+        <div id="recommendedColors" class="color-grid"></div>
+      </div>
+      <label class="custom-color"><span>自定义颜色</span><input id="customColor" type="color" value="#FFF3A6"></label>
+      <p class="settings-tip">待办会按时间自动排序：临近的在前，已完成的在最后。</p>
+    </aside>
+
+    <dialog id="editDialog" class="edit-dialog">
+      <form method="dialog" id="editForm">
+        <div class="dialog-head"><strong>修改待办</strong><button type="button" id="editClose" class="icon-btn">×</button></div>
+        <label class="dialog-field"><span>内容</span><input id="editText" maxlength="120" required></label>
+        <label class="dialog-field"><span>备注</span><textarea id="editNotes" rows="3" placeholder="补充说明、链接或想法"></textarea></label>
+        <label class="dialog-field"><span>截止日期</span><input id="editDate" type="date"></label>
+        <label class="dialog-no-due"><input id="editNoDue" type="checkbox">这是没有截止日期的任务</label>
+        <div class="dialog-grid">
+          <label class="dialog-field"><span>优先级</span><select id="editPriority"><option value="normal">普通</option><option value="high">高</option><option value="low">低</option></select></label>
+          <label class="dialog-field"><span>重复</span><select id="editRepeat"><option value="none">不重复</option><option value="daily">每天</option><option value="weekly">每周</option><option value="monthly">每月</option></select></label>
+        </div>
+        <div class="subtask-editor"><div class="dialog-head"><strong>子任务</strong><button type="button" id="addSubtaskBtn" class="small-action">＋ 添加</button></div><div id="subtaskRows"></div></div>
+        <div class="dialog-actions"><button type="button" id="editCancel" class="cancel-edit-btn">取消</button><button type="submit" class="add-btn">保存修改</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="searchDialog" class="edit-dialog search-dialog">
+      <div class="dialog-head"><strong>搜索与归档中心</strong><button type="button" id="searchClose" class="icon-btn">×</button></div>
+      <div class="search-tools"><input id="searchInput" placeholder="搜索所有便签、任务和备注…"><select id="searchScope"><option value="active">进行中</option><option value="archive">已归档</option><option value="trash">回收站</option><option value="all">全部</option></select></div>
+      <div id="searchResults" class="search-results"></div>
+    </dialog>
+  </main>
+  <script src="mobile-bridge.js"></script>
+  <script src="renderer.js"></script>
+  <script src="mobile-touch.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('stickyAPI', {
+  loadData: () => ipcRenderer.invoke('data:load'),
+  saveData: (data) => ipcRenderer.invoke('data:save', data),
+  getAutostart: () => ipcRenderer.invoke('autostart:get'),
+  setAutostart: (enabled) => ipcRenderer.invoke('autostart:set', enabled),
+  setShortcut: (accelerator) => ipcRenderer.invoke('shortcut:set', accelerator),
+  exportData: () => ipcRenderer.invoke('data:export'),
+  importData: () => ipcRenderer.invoke('data:import'),
+  backupData: () => ipcRenderer.invoke('data:backup'),
+  syncStatus: () => ipcRenderer.invoke('sync:status'),
+  syncAuth: (mode, email, password, displayName) => ipcRenderer.invoke('sync:auth', mode, email, password, displayName),
+  syncResendVerification: (email, password) => ipcRenderer.invoke('sync:resend-verification', email, password),
+  syncForgotPassword: (email) => ipcRenderer.invoke('sync:forgot-password', email),
+  syncNow: () => ipcRenderer.invoke('sync:now'),
+  syncLogout: () => ipcRenderer.invoke('sync:logout'),
+  minimize: () => ipcRenderer.send('window:minimize'),
+  close: () => ipcRenderer.send('window:close'),
+  hideToEdge: () => ipcRenderer.send('edge:hide'),
+  revealFromEdge: () => ipcRenderer.send('edge:reveal'),
+  startEdgeTabDrag: (x, y) => ipcRenderer.send('edge-tab:drag-start', { x, y }),
+  moveEdgeTabDrag: (x, y) => ipcRenderer.send('edge-tab:drag-move', { x, y }),
+  endEdgeTabDrag: () => ipcRenderer.send('edge-tab:drag-end'),
+  startResize: (edge, x, y) => ipcRenderer.send('resize:start', { edge, x, y }),
+  moveResize: (x, y) => ipcRenderer.send('resize:move', { x, y }),
+  endResize: () => ipcRenderer.send('resize:end'),
+  onDockChange: (callback) => ipcRenderer.on('edge:dock-change', (_event, state) => callback(state)),
+  onFocusAdd: (callback) => ipcRenderer.on('focus:add', callback),
+  onDataChanged: (callback) => ipcRenderer.on('data:changed', (_event, data) => callback(data)),
+  onSyncError: (callback) => ipcRenderer.on('sync:error', (_event, message) => callback(message))
+});

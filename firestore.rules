@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedInAs(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, create, update: if signedInAs(userId);
+      allow delete: if false;
+
+      match /workspace/{documentId} {
+        allow read: if signedInAs(userId);
+        allow create, update: if signedInAs(userId)
+          && documentId == 'current'
+          && request.resource.data.keys().hasOnly([
+            'payload', 'schemaVersion', 'updatedAt', 'deviceId', 'revision'
+          ])
+          && request.resource.data.payload is string
+          && request.resource.data.payload.size() < 900000
+          && request.resource.data.schemaVersion is int
+          && request.resource.data.updatedAt is int
+          && request.resource.data.deviceId is string
+          && request.resource.data.revision is int;
+        allow delete: if signedInAs(userId) && documentId == 'current';
+      }
+    }
+  }
+}
