@@ -1,7 +1,22 @@
 const { app, BrowserWindow, ipcMain, screen, Tray, Menu, Notification, nativeImage, globalShortcut, dialog, safeStorage, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const firebaseConfig = require('./firebase-config.json');
+
+function loadFirebaseConfig() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, 'firebase-config.json'), 'utf8'));
+  } catch {
+    return {};
+  }
+}
+
+const firebaseConfig = loadFirebaseConfig();
+
+function assertFirebaseConfigured() {
+  if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    throw new Error('Firebase 尚未配置。请将 src/firebase-config.example.json 复制为 src/firebase-config.json，并填写项目配置。');
+  }
+}
 
 let mainWindow;
 let tray;
@@ -57,6 +72,7 @@ function loadCloudAuth() {
 }
 
 async function firebaseRequest(url, options = {}) {
+  assertFirebaseConfigured();
   const response = await net.fetch(url, options);
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(body?.error?.message || `Firebase 请求失败 (${response.status})`);

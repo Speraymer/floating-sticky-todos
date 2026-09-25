@@ -3,8 +3,9 @@
   "version": "1.1.2",
   "private": true,
   "scripts": {
+    "check": "node --check www/mobile-bridge.js && node --check www/mobile-touch.js && node --check www/renderer.js",
     "sync": "cap sync android",
-    "apk": "cd android && gradlew.bat assembleDebug"
+    "apk": "npm run sync && cd android && gradlew.bat assembleDebug"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",

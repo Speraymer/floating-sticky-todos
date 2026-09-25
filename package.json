@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/renderer.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder --win nsis portable"
   },
