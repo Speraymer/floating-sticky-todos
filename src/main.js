@@ -318,8 +318,17 @@ function showMainWindow(focusAdd = false) {
 
 function createTray() {
   if (tray) return;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect x="2" y="2" width="28" height="28" rx="7" fill="#FFF3A6"/><path d="M9 16l5 5 10-12" fill="none" stroke="#29271f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  tray = new Tray(nativeImage.createFromDataURL(`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`).resize({ width: 16, height: 16 }));
+  // nativeImage does not decode SVG. Use opaque BGRA pixels for the note/check icon.
+  const pixels = Buffer.alloc(32 * 32 * 4);
+  for (let y = 2; y < 30; y++) {
+    for (let x = 2; x < 30; x++) {
+      const check = (x >= 8 && x <= 14 && Math.abs(y - x - 5) <= 2)
+        || (x >= 14 && x <= 25 && Math.abs(y + x - 33) <= 2);
+      const offset = (y * 32 + x) * 4;
+      pixels.set(check ? [31, 39, 41, 255] : [166, 243, 255, 255], offset);
+    }
+  }
+  tray = new Tray(nativeImage.createFromBitmap(pixels, { width: 32, height: 32 }));
   tray.setToolTip('桌面便签待办');
   refreshTrayMenu();
   tray.on('click', () => mainWindow?.isVisible() ? mainWindow.hide() : showMainWindow(false));
@@ -435,6 +444,7 @@ function createWindow() {
     show: false,
     frame: false,
     skipTaskbar: true,
+    ...(process.platform === 'win32' ? { type: 'toolbar' } : {}),
     transparent: true,
     backgroundColor: '#00000000',
     backgroundMaterial: 'none',
@@ -447,6 +457,10 @@ function createWindow() {
       nodeIntegration: false
     }
   });
+  // Reapply after native visibility / z-order changes, including tray and edge reveal.
+  for (const event of ['show', 'restore', 'always-on-top-changed']) {
+    mainWindow.on(event, () => mainWindow.setSkipTaskbar(true));
+  }
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.once('ready-to-show', () => mainWindow.show());
   mainWindow.on('close', event => {
